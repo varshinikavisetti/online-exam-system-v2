@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Edit Question{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h4>Edit Question</h4>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="mb-3">
+        <label class="form-label">Question Type</label>
+        <select name="question_type" id="questionType" class="form-select" onchange="toggleQuestionType()">
+          <option value="mcq" {% if question.question_type == 'mcq' %}selected{% endif %}>Multiple Choice</option>
+          <option value="true_false" {% if question.question_type == 'true_false' %}selected{% endif %}>True / False</option>
+          <option value="fill_blank" {% if question.question_type == 'fill_blank' %}selected{% endif %}>Fill in the Blank</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Question Text</label>
+        <textarea name="question_text" class="form-control" rows="2" required>{{ question.question_text }}</textarea>
+      </div>
+
+      <div id="mcqFields">
+        <div class="mb-2"><label class="form-label">Option A</label><input type="text" name="option_a" class="form-control" value="{{ question.option_a or '' }}"></div>
+        <div class="mb-2"><label class="form-label">Option B</label><input type="text" name="option_b" class="form-control" value="{{ question.option_b or '' }}"></div>
+        <div class="mb-2"><label class="form-label">Option C</label><input type="text" name="option_c" class="form-control" value="{{ question.option_c or '' }}"></div>
+        <div class="mb-3"><label class="form-label">Option D</label><input type="text" name="option_d" class="form-control" value="{{ question.option_d or '' }}"></div>
+        <div class="mb-3">
+          <label class="form-label">Correct Option</label>
+          <select name="correct_option" class="form-select">
+            {% for opt in ['A', 'B', 'C', 'D'] %}
+            <option value="{{ opt }}" {% if question.question_type == 'mcq' and question.correct_option == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div id="tfFields" class="d-none mb-3">
+        <label class="form-label">Correct Answer</label>
+        <select name="correct_tf" class="form-select">
+          <option value="True" {% if question.question_type == 'true_false' and question.correct_option == 'True' %}selected{% endif %}>True</option>
+          <option value="False" {% if question.question_type == 'true_false' and question.correct_option == 'False' %}selected{% endif %}>False</option>
+        </select>
+      </div>
+
+      <div id="fillFields" class="d-none mb-3">
+        <label class="form-label">Correct Answer (exact text, matched case-insensitively)</label>
+        <input type="text" name="correct_text" class="form-control" value="{{ question.correct_text or '' }}">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Marks</label>
+        <input type="number" name="marks" class="form-control" value="{{ question.marks }}" min="1" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="{{ url_for('admin.manage_questions', exam_id=question.exam_id) }}" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleQuestionType() {
+  const type = document.getElementById('questionType').value;
+  const mcq = document.getElementById('mcqFields');
+  const tf = document.getElementById('tfFields');
+  const fill = document.getElementById('fillFields');
+
+  mcq.classList.toggle('d-none', type !== 'mcq');
+  tf.classList.toggle('d-none', type !== 'true_false');
+  fill.classList.toggle('d-none', type !== 'fill_blank');
+
+  const mcqInputs = mcq.querySelectorAll('input, select');
+  mcqInputs.forEach(el => { if (el.name.startsWith('option_')) el.required = (type === 'mcq'); });
+}
+toggleQuestionType();
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h3>Admin Dashboard</h3>
+<p class="text-muted">Overview of your exam system.</p>
+
+<div class="row mt-3 g-3">
+  <div class="col-md-4 col-sm-6">
+    <a href="{{ url_for('admin.view_students') }}" class="stat-card">
+      <div class="card text-center"><div class="card-body">
+        <h6 class="text-muted">Students</h6><h2 class="count-up">{{ total_students }}</h2>
+      </div></div>
+    </a>
+  </div>
+  <div class="col-md-4 col-sm-6">
+    <a href="{{ url_for('admin.manage_exams') }}" class="stat-card">
+      <div class="card text-center"><div class="card-body">
+        <h6 class="text-muted">Exams</h6><h2 class="count-up">{{ total_exams }}</h2>
+      </div></div>
+    </a>
+  </div>
+  <div class="col-md-4 col-sm-6">
+    <a href="{{ url_for('admin.create_exam') }}" class="stat-card">
+      <div class="card text-center h-100 d-flex align-items-center justify-content-center"><div class="card-body">
+        <i class="bi bi-plus-circle-fill" style="font-size:1.8rem;color:var(--gold-dark)"></i>
+        <div class="fw-bold mt-1">New Exam</div>
+      </div></div>
+    </a>
+  </div>
+</div>
+
+<div class="section-label">Manage</div>
+<div class="row g-3">
+  <div class="col-md-3 col-sm-6">
+    <a href="{{ url_for('admin.manage_exams') }}" class="action-tile">
+      <div class="action-icon"><i class="bi bi-journal-text"></i></div>
+      <div><div class="action-title">Exams</div><div class="action-desc">Create, schedule &amp; publish</div></div>
+    </a>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <a href="{{ url_for('admin.view_students') }}" class="action-tile">
+      <div class="action-icon"><i class="bi bi-people"></i></div>
+      <div><div class="action-title">Students</div><div class="action-desc">Registered student directory</div></div>
+    </a>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <a href="{{ url_for('admin.view_results') }}" class="action-tile">
+      <div class="action-icon"><i class="bi bi-clipboard-data"></i></div>
+      <div><div class="action-title">Results</div><div class="action-desc">Per-exam results &amp; integrity flags</div></div>
+    </a>
+  </div>
+  <div class="col-md-3 col-sm-6">
+    <a href="{{ url_for('admin.analytics') }}" class="action-tile">
+      <div class="action-icon"><i class="bi bi-graph-up"></i></div>
+      <div><div class="action-title">Analytics</div><div class="action-desc">Pass rates &amp; question difficulty</div></div>
+    </a>
+  </div>
+</div>
+
+<div class="section-label">Recent Results</div>
+{% if recent_results %}
+<table class="table table-bordered bg-white">
+  <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Status</th><th>Date</th></tr></thead>
+  <tbody class="stagger-in">
+    {% for r in recent_results %}
+    <tr>
+      <td>{{ r.student.name }}</td>
+      <td>{{ r.exam.title }}</td>
+      <td>{{ r.score }} / {{ r.exam.total_marks }}</td>
+      <td>{% if r.passed %}<span class="badge bg-success">Pass</span>{% else %}<span class="badge bg-danger">Fail</span>{% endif %}</td>
+      <td>{{ r.submitted_at.strftime('%d %b %Y') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-center text-muted py-5 border rounded bg-white empty-state">No results yet.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="profile-avatar">{{ current_user.name[0]|upper }}</div>
+      <div>
+        <h4 class="mb-0">{{ current_user.name }}</h4>
+        <p class="text-muted mb-0">{{ current_user.email }}</p>
+        <p class="text-muted small mb-0">Joined {{ current_user.created_at.strftime('%d %b %Y') }}</p>
+      </div>
+      <a href="{{ url_for('student.edit_profile') }}" class="btn btn-outline-dark btn-sm ms-auto">Edit Profile</a>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+          <h6 class="text-muted">Exams Taken</h6><h2>{{ attempt_count }}</h2>
+        </div></div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+          <h6 class="text-muted">Average %</h6><h2>{{ avg_percentage }}%</h2>
+        </div></div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+          <h6 class="text-muted">Exams Passed</h6><h2>{{ pass_count }}</h2>
+        </div></div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+          <h6 class="text-muted">Best Score</h6>
+          <h2>{% if best_result %}{{ best_result.percentage }}%{% else %}—{% endif %}</h2>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <a href="{{ url_for('student.history') }}" class="btn btn-outline-dark">View Full Exam History</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<h3>Welcome, {{ current_user.name }}</h3>
+<p class="text-muted">Here's an overview of your exams.</p>
+
+<div class="row mt-3 g-3">
+  <div class="col-md-4">
+    <a href="{{ url_for('student.exam_list') }}" class="stat-card">
+      <div class="card text-center">
+        <div class="card-body">
+          <h6 class="text-muted">Available Exams</h6>
+          <h2 class="count-up">{{ available_exams|length }}</h2>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('student.history') }}" class="stat-card">
+      <div class="card text-center">
+        <div class="card-body">
+          <h6 class="text-muted">Completed Exams</h6>
+          <h2 class="count-up">{{ completed_exams|length }}</h2>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('student.profile') }}" class="stat-card">
+      <div class="card text-center">
+        <div class="card-body">
+          <h6 class="text-muted">My Profile</h6>
+          <h2 style="font-size: 1.4rem;">View Stats</h2>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="section-label">Quick Links</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <a href="{{ url_for('student.exam_list') }}" class="action-tile">
+      <div class="action-icon"><i class="bi bi-journal-check"></i></div>
+      <div><div class="action-title">Take an Exam</div><div class="action-desc">Browse exams open to you now</div></div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('student.history') }}" class="action-tile">
+      <div class="action-icon"><i class="bi bi-clock-history"></i></div>
+      <div><div class="action-title">Exam History</div><div class="action-desc">All past attempts &amp; scores</div></div>
+    </a>
+  </div>
+  <div class="col-md-4">
+    <a href="{{ url_for('student.edit_profile') }}" class="action-tile">
+      <div class="action-icon"><i class="bi bi-person-gear"></i></div>
+      <div><div class="action-title">Edit Profile</div><div class="action-desc">Update your contact details</div></div>
+    </a>
+  </div>
+</div>
+
+<div class="section-label">Recent Results</div>
+{% if recent_results %}
+<table class="table table-bordered bg-white">
+  <thead><tr><th>Exam</th><th>Score</th><th>Percentage</th><th>Status</th><th>Date</th></tr></thead>
+  <tbody class="stagger-in">
+    {% for r in recent_results %}
+    <tr>
+      <td>{{ r.exam.title }}</td>
+      <td>{{ r.score }} / {{ r.exam.total_marks }}</td>
+      <td>{{ r.percentage }}%</td>
+      <td>{% if r.passed %}<span class="badge bg-success">Pass</span>{% else %}<span class="badge bg-danger">Fail</span>{% endif %}</td>
+      <td>{{ r.submitted_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-center text-muted py-5 border rounded bg-white empty-state">No results yet. Take an exam to see your scores here.</div>
+{% endif %}
+{% endblock %}

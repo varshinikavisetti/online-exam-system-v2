@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Exam Results{% endblock %}
+{% block content %}
+<h4>Exam Results</h4>
+<form method="GET" class="row g-2 my-3">
+  <div class="col-md-4">
+    <select name="exam_id" class="form-select" onchange="this.form.submit()">
+      <option value="0" {% if selected_exam_id == 0 %}selected{% endif %}>All exams (combined)</option>
+      {% for exam in exams %}
+      <option value="{{ exam.id }}" {% if selected_exam_id == exam.id %}selected{% endif %}>{{ exam.title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-4">
+    <input type="text" name="search" class="form-control" placeholder="Search by student name..." value="{{ search }}">
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-outline-primary w-100">Search</button>
+  </div>
+</form>
+
+{% if results %}
+<table class="table table-bordered bg-white">
+  <thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Percentage</th><th>Status</th><th>Integrity</th><th>Date</th></tr></thead>
+  <tbody class="stagger-in">
+    {% for r in results %}
+    <tr>
+      <td>{{ r.student.name }}</td>
+      <td>{{ r.exam.title }}</td>
+      <td>{{ r.score }} / {{ r.exam.total_marks }}</td>
+      <td>{{ r.percentage }}%</td>
+      <td>{% if r.passed %}<span class="badge bg-success">Pass</span>{% else %}<span class="badge bg-danger">Fail</span>{% endif %}</td>
+      <td>
+        {% if r.terminated %}
+          <span class="badge bg-danger" title="{{ r.termination_reason }}">
+            Terminated
+            {% if r.termination_reason == 'tab_switch_limit' %}(tab switch){% endif %}
+            {% if r.termination_reason == 'phone_or_object_detected' %}(phone/object detected){% endif %}
+            {% if r.termination_reason == 'no_face_detected' %}(no face detected){% endif %}
+            {% if r.termination_reason == 'submitted_too_early' %}(submitted too early){% endif %}
+          </span>
+        {% elif r.is_flagged() %}
+          <span class="badge bg-warning text-dark" title="{{ r.tab_switch_count }} tab switches">Flagged ({{ r.tab_switch_count }})</span>
+        {% else %}
+          <span class="badge bg-secondary">Clean</span>
+        {% endif %}
+      </td>
+      <td>{{ r.submitted_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-center text-muted py-5 border rounded bg-white">No results found.</div>
+{% endif %}
+{% endblock %}

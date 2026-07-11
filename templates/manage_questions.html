@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Questions - {{ exam.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h4>Questions for "{{ exam.title }}"</h4>
+  <a href="{{ url_for('admin.add_question', exam_id=exam.id) }}" class="btn btn-primary">+ Add Question</a>
+</div>
+
+<div class="card bg-white mt-3">
+  <div class="card-body py-3">
+    <form method="POST" action="{{ url_for('admin.import_questions', exam_id=exam.id) }}" enctype="multipart/form-data" class="row g-2 align-items-center">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="col-auto"><strong class="small">Bulk import from Excel:</strong></div>
+      <div class="col-md-5"><input type="file" name="questions_file" accept=".xlsx" class="form-control form-control-sm" required></div>
+      <div class="col-auto"><button type="submit" class="btn btn-sm btn-outline-primary">Import</button></div>
+      <div class="col-12 form-text">
+        .xlsx with header row: question_type (mcq/true_false/fill_blank), question_text, option_a-d, correct_option, correct_text, marks.
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if questions %}
+<table class="table table-bordered bg-white mt-3">
+  <thead><tr><th>#</th><th>Type</th><th>Question</th><th>Correct</th><th>Marks</th><th>Actions</th></tr></thead>
+  <tbody class="stagger-in">
+    {% for q in questions %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>
+        {% if q.question_type == 'mcq' %}<span class="badge bg-primary">MCQ</span>
+        {% elif q.question_type == 'true_false' %}<span class="badge bg-info text-dark">True/False</span>
+        {% else %}<span class="badge bg-secondary">Fill Blank</span>{% endif %}
+      </td>
+      <td>{{ q.question_text }}</td>
+      <td>{{ q.correct_text if q.question_type == 'fill_blank' else q.correct_option }}</td>
+      <td>{{ q.marks }}</td>
+      <td>
+        <a href="{{ url_for('admin.edit_question', question_id=q.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+        <form method="POST" action="{{ url_for('admin.delete_question', question_id=q.id) }}" class="d-inline" onsubmit="return confirm('Delete this question?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-center text-muted py-5 border rounded bg-white mt-3">No questions added yet.</div>
+{% endif %}
+<a href="{{ url_for('admin.manage_exams') }}" class="btn btn-outline-secondary mt-3">Back to Exams</a>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="mb-3">Edit Profile</h4>
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="name" class="form-control" value="{{ current_user.name }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+            <div class="form-text">Email cannot be changed.</div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Mobile Number</label>
+              <input type="tel" name="mobile_number" class="form-control" value="{{ current_user.mobile_number or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Year of Study</label>
+              <select name="year_of_study" class="form-select">
+                <option value="" {% if not current_user.year_of_study %}selected{% endif %}>Select year</option>
+                {% for y in ['1','2','3','4'] %}
+                <option value="{{ y }}" {% if current_user.year_of_study == y %}selected{% endif %}>{{ y }}{{ 'st' if y=='1' else 'nd' if y=='2' else 'rd' if y=='3' else 'th' }} Year</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Department</label>
+              <input type="text" name="department" class="form-control" value="{{ current_user.department or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Roll Number</label>
+              <input type="text" name="roll_number" class="form-control" value="{{ current_user.roll_number or '' }}">
+            </div>
+          </div>
+          <hr class="my-4">
+          <p class="text-muted small">Leave the fields below blank if you don't want to change your password.</p>
+          <div class="mb-3">
+            <label class="form-label">Current Password</label>
+            <input type="password" name="current_password" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">New Password</label>
+            <input type="password" name="new_password" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="{{ url_for('student.profile') }}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

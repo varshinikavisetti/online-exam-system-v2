@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}My Exam History{% endblock %}
+{% block content %}
+<h4>Exam History</h4>
+{% if results %}
+<table class="table table-bordered bg-white mt-3">
+  <thead><tr><th>Exam</th><th>Score</th><th>Percentage</th><th>Status</th><th>Date</th></tr></thead>
+  <tbody class="stagger-in">
+    {% for r in results %}
+    <tr>
+      <td>{{ r.exam.title }}</td>
+      <td>{{ r.score }} / {{ r.exam.total_marks }}</td>
+      <td>{{ r.percentage }}%</td>
+      <td>{% if r.passed %}<span class="badge bg-success">Pass</span>{% else %}<span class="badge bg-danger">Fail</span>{% endif %}</td>
+      <td>{{ r.submitted_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-center text-muted py-5 border rounded bg-white">No exam history yet.</div>
+{% endif %}
+{% endblock %}

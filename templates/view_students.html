@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h4>Registered Students</h4>
+  <span class="text-muted small">{{ students|length }} total</span>
+</div>
+{% if students %}
+<table class="table table-bordered bg-white mt-3">
+  <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Year</th><th>Department</th><th>Roll No.</th><th>Registered On</th></tr></thead>
+  <tbody class="stagger-in">
+    {% for s in students %}
+    <tr>
+      <td>{{ s.name }}</td>
+      <td>{{ s.email }}</td>
+      <td>{{ s.mobile_number or '—' }}</td>
+      <td>{{ s.year_of_study or '—' }}</td>
+      <td>{{ s.department or '—' }}</td>
+      <td>{{ s.roll_number or '—' }}</td>
+      <td>{{ s.created_at.strftime('%d %b %Y') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-center text-muted py-5 border rounded bg-white mt-3">No students registered yet.</div>
+{% endif %}
+{% endblock %}

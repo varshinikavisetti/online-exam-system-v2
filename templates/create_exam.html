@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Create Exam{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h4>Create New Exam</h4>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" name="title" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Subject</label>
+        <input type="text" name="subject" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Duration (minutes)</label>
+        <input type="number" name="duration" class="form-control" min="1" required>
+      </div>
+      <div class="alert alert-info small mb-3">
+        Total Marks isn't set here — it's calculated automatically from the marks of the questions you add next.
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Pass Percentage</label>
+        <input type="number" name="pass_percentage" class="form-control" min="1" max="100" value="40" required>
+        <div class="form-text">Minimum % a student needs to score to pass this exam.</div>
+      </div>
+
+      <hr>
+      <h6>Exam Settings</h6>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="negative_marking_enabled" id="negMarkSwitch" onchange="document.getElementById('negMarkValueWrap').classList.toggle('d-none', !this.checked)">
+            <label class="form-check-label" for="negMarkSwitch">Enable Negative Marking</label>
+          </div>
+          <div id="negMarkValueWrap" class="d-none mt-2">
+            <label class="form-label">Marks deducted per wrong answer</label>
+            <input type="number" step="0.05" min="0" name="negative_marks_value" class="form-control" value="0.25">
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Max Attempts Allowed</label>
+          <input type="number" name="max_attempts" class="form-control" min="1" value="1" required>
+          <div class="form-text">How many times a student may attempt this exam.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="shuffle_questions" id="shuffleQ">
+            <label class="form-check-label" for="shuffleQ">Shuffle Questions</label>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="shuffle_options" id="shuffleO">
+            <label class="form-check-label" for="shuffleO">Shuffle Options</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="show_results" id="showResults" checked>
+            <label class="form-check-label" for="showResults">Show Results to Students After Submission</label>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="is_published" id="isPublished" checked>
+            <label class="form-check-label" for="isPublished">Publish Exam (visible to students)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Minimum Time Before Submission (minutes)</label>
+          <input type="number" name="min_submit_minutes" class="form-control" min="0" value="0">
+          <div class="form-text">If a student submits earlier than this, their attempt is flagged/terminated as a possible violation. 0 = no minimum.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="webcam_proctoring_enabled" id="webcamProctor">
+            <label class="form-check-label" for="webcamProctor">Enable Webcam Proctoring</label>
+          </div>
+          <div class="form-text">Uses the student's webcam to detect faces/phones during the exam. Requires camera permission; exam auto-terminates if no face or a phone/extra object is detected.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Scheduled Start <span class="text-muted small">(optional)</span></label>
+          <input type="datetime-local" name="scheduled_start" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Scheduled End <span class="text-muted small">(optional)</span></label>
+          <input type="datetime-local" name="scheduled_end" class="form-control">
+        </div>
+        <div class="form-text mb-3">Leave both blank for "open whenever published". If set, students can only start the exam within this window even if it's published.</div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Create Exam</button>
+      <a href="{{ url_for('admin.manage_exams') }}" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

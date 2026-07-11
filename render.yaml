@@ -1,0 +1,21 @@
+# Render Blueprint — lets Render auto-detect and configure this service
+# when you connect the repo via "New +" -> "Blueprint" instead of "Web Service".
+services:
+  - type: web
+    name: online-exam-system
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false

@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: exam_system_web
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-dev-key-change-me}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-examuser}
+      DB_PASSWORD: ${DB_PASSWORD:-exampass}
+      DB_NAME: ${DB_NAME:-exam_system}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: exam_system_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-exam_system}
+      MYSQL_USER: ${DB_USER:-examuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-exampass}
+    ports:
+      - "3307:3306"   # host:container - avoids clashing with a local MySQL on 3306
+    volumes:
+      - exam_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  exam_mysql_data:

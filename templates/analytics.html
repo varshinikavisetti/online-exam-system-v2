@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<h4>Analytics Dashboard</h4>
+
+<div class="row g-3 mt-2">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Overall Pass / Fail</h6>
+        <canvas id="passFailChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="text-muted">Average Score % by Exam</h6>
+        <canvas id="examAvgChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-body">
+    <h6 class="text-muted">Student Performance Trend (Average % Over Time)</h6>
+    <canvas id="trendChart" height="90"></canvas>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="text-muted mb-0">Question Difficulty (% answered wrong)</h6>
+      <form method="GET" class="d-flex gap-2">
+        <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">All Exams</option>
+          {% for exam in all_exams %}
+          <option value="{{ exam.id }}" {% if selected_exam_id == exam.id %}selected{% endif %}>{{ exam.title }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    <canvas id="difficultyChart" height="100"></canvas>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-body">
+    <h6 class="text-muted">Exam Summary Table</h6>
+    <table class="table table-bordered bg-white mt-2">
+      <thead><tr><th>Exam</th><th>Attempts</th><th>Avg %</th><th>Pass</th><th>Fail</th></tr></thead>
+      <tbody>
+        {% for row in exam_summary %}
+        <tr>
+          <td>{{ row.exam_title }}</td>
+          <td>{{ row.attempt_count }}</td>
+          <td>{{ row.average_percentage }}%</td>
+          <td>{{ row.pass_count }}</td>
+          <td>{{ row.fail_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  const passFailData = {{ pass_fail | tojson }};
+  const examSummaryData = {{ exam_summary | tojson }};
+  const difficultyData = {{ difficulty_report | tojson }};
+  const trendData = {{ trend | tojson }};
+
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: trendData.map(r => r.date),
+      datasets: [{
+        label: 'Average %',
+        data: trendData.map(r => r.average_percentage),
+        borderColor: '#6f42c1',
+        backgroundColor: 'rgba(111,66,193,0.15)',
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true, max: 100 } } }
+  });
+
+  new Chart(document.getElementById('passFailChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Pass', 'Fail'],
+      datasets: [{
+        data: [passFailData.pass, passFailData.fail],
+        backgroundColor: ['#198754', '#dc3545']
+      }]
+    }
+  });
+
+  new Chart(document.getElementById('examAvgChart'), {
+    type: 'bar',
+    data: {
+      labels: examSummaryData.map(r => r.exam_title),
+      datasets: [{
+        label: 'Average %',
+        data: examSummaryData.map(r => r.average_percentage),
+        backgroundColor: '#0d6efd'
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true, max: 100 } } }
+  });
+
+  new Chart(document.getElementById('difficultyChart'), {
+    type: 'bar',
+    data: {
+      labels: difficultyData.map(r => r.question_text),
+      datasets: [{
+        label: '% Answered Wrong',
+        data: difficultyData.map(r => r.wrong_percentage),
+        backgroundColor: '#fd7e14'
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: { x: { beginAtZero: true, max: 100 } }
+    }
+  });
+</script>
+{% endblock %}

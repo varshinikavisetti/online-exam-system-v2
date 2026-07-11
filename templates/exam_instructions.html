@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Instructions - {{ exam.title }}{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h4>{{ exam.title }}</h4>
+    <p class="text-muted">{{ exam.subject }}</p>
+    <ul>
+      <li>Duration: <strong>{{ exam.duration }} minutes</strong></li>
+      <li>Total questions: <strong>{{ exam.question_count() }}</strong></li>
+      <li>Total marks: <strong>{{ exam.total_marks }}</strong></li>
+      <li>The exam will auto-submit when the timer reaches zero.</li>
+      <li>You can navigate between questions using Previous / Next.</li>
+      {% if exam.max_attempts > 1 %}
+      <li>You may attempt this exam up to <strong>{{ exam.max_attempts }}</strong> times. Attempts used so far: {{ attempts_used }}.</li>
+      {% else %}
+      <li>You can attempt this exam only <strong>once</strong>.</li>
+      {% endif %}
+      {% if exam.negative_marking_enabled %}
+      <li>Negative marking is enabled: <strong>-{{ exam.negative_marks_value }}</strong> mark(s) for each wrong answer.</li>
+      {% endif %}
+      {% if exam.shuffle_questions or exam.shuffle_options %}
+      <li>Questions{% if exam.shuffle_options %} and options{% endif %} will appear in a random order.</li>
+      {% endif %}
+      {% if exam.webcam_proctoring_enabled %}
+      <li><strong>Webcam proctoring is enabled for this exam.</strong> You must allow camera access. Keep your face visible to the camera at all times, and do not show phones, books, or other people in front of the camera — your exam will be terminated immediately if this happens.</li>
+      {% endif %}
+      {% if exam.min_submit_minutes > 0 %}
+      <li>You must spend at least <strong>{{ exam.min_submit_minutes }} minute{{ 's' if exam.min_submit_minutes != 1 }}</strong> on this exam. Submitting earlier than that will terminate your attempt.</li>
+      {% endif %}
+    </ul>
+    <a href="{{ url_for('student.take_exam', exam_id=exam.id) }}" class="btn btn-success">Start Exam</a>
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</div>
+{% endblock %}

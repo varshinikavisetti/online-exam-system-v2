@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ exam.title }} - In Progress{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4>{{ exam.title }}</h4>
+  <div id="timer" class="badge bg-danger fs-6 p-2">--:--</div>
+</div>
+
+{% if exam.webcam_proctoring_enabled %}
+<div class="d-flex align-items-center gap-2 mb-3">
+  <video id="proctorVideo" width="120" height="90" muted playsinline class="rounded border"></video>
+  <span id="proctorStatus" class="small text-muted">Starting camera...</span>
+</div>
+{% endif %}
+
+<div id="proctorWarning" class="alert alert-warning d-none" role="alert"></div>
+
+<form id="examForm" method="POST" action="{{ url_for('student.submit_exam', exam_id=exam.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="tab_switch_count" id="tabSwitchCount" value="0">
+  <input type="hidden" name="proctor_violation" id="proctorViolation" value="0">
+  <input type="hidden" name="proctor_violation_reason" id="proctorViolationReason" value="">
+  {% for q in questions %}
+  <div class="card mb-3 question-card {% if not loop.first %}d-none{% endif %}" data-index="{{ loop.index0 }}">
+    <div class="card-body">
+      <h6 class="text-muted">Question {{ loop.index }} of {{ questions|length }} ({{ q.marks }} mark{{ 's' if q.marks != 1 }})</h6>
+      <p class="fw-semibold">{{ q.question_text }}</p>
+      {% if q.question_type == 'fill_blank' %}
+      <input type="text" class="form-control" name="question_{{ q.id }}" placeholder="Type your answer">
+      {% else %}
+        {% for key, text in question_options[q.id] %}
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="question_{{ q.id }}" value="{{ key }}" id="q{{ q.id }}_{{ key }}">
+          <label class="form-check-label" for="q{{ q.id }}_{{ key }}">{% if q.question_type == 'mcq' %}{{ key }}. {% endif %}{{ text }}</label>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="d-flex justify-content-between mt-3">
+    <button type="button" id="prevBtn" class="btn btn-outline-secondary" disabled>Previous</button>
+    <span id="progressLabel" class="align-self-center text-muted"></span>
+    <button type="button" id="nextBtn" class="btn btn-outline-primary">Next</button>
+    <button type="button" id="submitBtn" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#confirmModal">Submit Exam</button>
+  </div>
+</form>
+
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Submit Exam?</h5></div>
+      <div class="modal-body">Are you sure you want to submit? You cannot change your answers after this.</div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" onclick="document.getElementById('examForm').submit()">Yes, Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DURATION_SECONDS = {{ exam.duration * 60 }};
+  const WEBCAM_PROCTORING_ENABLED = {{ 'true' if exam.webcam_proctoring_enabled else 'false' }};
+</script>
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/exam_nav.js') }}"></script>
+<script src="{{ url_for('static', filename='js/proctor.js') }}"></script>
+{% if exam.webcam_proctoring_enabled %}
+<link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://storage.googleapis.com">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.1.0/dist/blazeface.min.js"></script>
+<script src="{{ url_for('static', filename='js/webcam_proctor.js') }}"></script>
+{% endif %}
+{% endblock %}

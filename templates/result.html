@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body text-center py-5">
+    <h4>{{ exam.title }}</h4>
+    <p class="text-muted">{{ exam.subject }}</p>
+
+    {% if result.terminated %}
+      <div class="alert alert-danger mt-3 mb-0 small">
+        <strong>This exam was terminated.</strong>
+        {% if result.termination_reason == 'tab_switch_limit' %}
+          You switched tabs/windows {{ result.tab_switch_count }} times, exceeding the allowed limit.
+        {% elif result.termination_reason == 'phone_or_object_detected' %}
+          An unauthorized object (phone/book/extra person) was detected in front of the camera.
+        {% elif result.termination_reason == 'no_face_detected' %}
+          Your face was not visible to the camera for too long, or the camera could not be accessed.
+        {% elif result.termination_reason == 'submitted_too_early' %}
+          You submitted before the minimum required time for this exam.
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if hidden %}
+      <div class="alert alert-info mt-4 mb-0">
+        Your submission has been recorded. The instructor has chosen to hide results for this exam until later.
+      </div>
+    {% else %}
+    <div class="my-4">
+      <span class="grade-stamp {{ 'pass' if result.passed else 'fail' }}">
+        {{ 'Pass' if result.passed else 'Fail' }}
+      </span>
+    </div>
+
+    <h1 class="display-4 {% if result.passed %}text-success{% else %}text-danger{% endif %}">
+      {{ result.score }} / {{ exam.total_marks }}
+    </h1>
+    <p class="fs-5">{{ result.percentage }}% <span class="text-muted small">(pass mark: {{ exam.pass_percentage }}%)</span></p>
+
+    {% if exam.negative_marking_enabled %}
+      <p class="small text-muted">Negative marking was applied to this exam (-{{ exam.negative_marks_value }} per wrong answer).</p>
+    {% endif %}
+
+    {% if result.is_flagged() and not result.terminated %}
+      <div class="alert alert-warning mt-3 mb-0 small d-inline-block">
+        Tab-switch detected {{ result.tab_switch_count }} time{{ 's' if result.tab_switch_count != 1 }} during this exam.
+      </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="mt-4">
+      <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
