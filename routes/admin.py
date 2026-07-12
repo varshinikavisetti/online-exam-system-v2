@@ -14,6 +14,7 @@ from services.analytics_service import (
     performance_trend,
 )
 from services.email_service import send_exam_notification_to_students
+from utils.timezone_helper import ist_input_to_utc, utc_to_ist
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -23,19 +24,10 @@ def admin_only():
         abort(403)
 
 
-def _parse_datetime_local(value):
-    """Parses an HTML <input type="datetime-local"> value
-    ("YYYY-MM-DDTHH:MM") into a naive UTC-ish datetime, or None if blank/invalid.
-    We intentionally don't do timezone conversion — the whole app already
-    stores/compares timestamps naively (see datetime.utcnow() elsewhere), so
-    this stays consistent with that rather than introducing a mismatched
-    timezone-aware value in just one place."""
-    if not value:
-        return None
-    try:
-        return datetime.strptime(value, "%Y-%m-%dT%H:%M")
-    except ValueError:
-        return None
+# Kept as an alias so nothing else needs to change: admin-entered schedule
+# times are IST (this college's timezone), not literal UTC — see
+# utils/timezone_helper.py for why that distinction matters.
+_parse_datetime_local = ist_input_to_utc
 
 
 @admin_bp.route("/dashboard")

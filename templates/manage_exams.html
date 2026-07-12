@@ -27,7 +27,7 @@
         {% if exam.max_attempts > 1 %}<span class="badge bg-info text-dark">{{ exam.max_attempts }} attempts</span>{% endif %}
         {% if exam.webcam_proctoring_enabled %}<span class="badge bg-danger" title="Webcam proctoring on">📷 Proctored</span>{% endif %}
         {% if exam.min_submit_minutes > 0 %}<span class="badge bg-secondary" title="Minimum time before submit">min {{ exam.min_submit_minutes }}m</span>{% endif %}
-        {% if exam.scheduled_start %}<span class="badge bg-dark" title="Scheduled window">🗓 {{ exam.scheduled_start.strftime('%d %b, %I:%M %p') }}</span>{% endif %}
+        {% if exam.scheduled_start %}<span class="badge bg-dark" title="Scheduled window (IST)">🗓 {{ (exam.scheduled_start|to_ist).strftime('%d %b, %I:%M %p') }} IST</span>{% endif %}
       </td>
       <td class="text-nowrap">
         <a href="{{ url_for('admin.manage_questions', exam_id=exam.id) }}" class="btn btn-sm btn-outline-primary">Questions</a>

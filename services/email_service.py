@@ -13,6 +13,7 @@ import logging
 from flask import current_app
 from flask_mail import Message
 from extensions import mail
+from utils.timezone_helper import utc_to_ist
 
 logger = logging.getLogger("exam_system")
 
@@ -36,10 +37,12 @@ def send_exam_notification_to_students(exam, students, extra_note=""):
 
     schedule_line = ""
     if exam.scheduled_start:
-        schedule_line = f"\nScheduled window: {exam.scheduled_start.strftime('%d %b %Y, %I:%M %p')}"
+        start_ist = utc_to_ist(exam.scheduled_start)
+        schedule_line = f"\nScheduled window: {start_ist.strftime('%d %b %Y, %I:%M %p')}"
         if exam.scheduled_end:
-            schedule_line += f" to {exam.scheduled_end.strftime('%d %b %Y, %I:%M %p')}"
-        schedule_line += " (UTC)"
+            end_ist = utc_to_ist(exam.scheduled_end)
+            schedule_line += f" to {end_ist.strftime('%d %b %Y, %I:%M %p')}"
+        schedule_line += " IST"
 
     sent = 0
     for student in students:

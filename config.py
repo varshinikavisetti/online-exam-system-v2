@@ -59,6 +59,29 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Some managed MySQL-compatible providers (TiDB Cloud Serverless,
+    # PlanetScale, etc.) REQUIRE the connection itself to be TLS-encrypted
+    # and reject plain connections outright ("Connections using insecure
+    # transport are prohibited"). PyMySQL doesn't negotiate TLS unless told
+    # to, so this is opt-in via DB_SSL rather than always-on: your local
+    # MySQL almost certainly uses a self-signed cert that would fail
+    # verification against the public CA bundle, breaking local dev.
+    # Set DB_SSL=true in your deployment platform's environment variables
+    # (Render/Railway/etc.) for providers that require it; leave it unset
+    # locally. Uses ssl_verify_cert/ssl_verify_identity (PyMySQL's
+    # documented kwargs, also what TiDB Cloud's own docs recommend) rather
+    # than passing a raw ssl.SSLContext — the two are not equivalent in
+    # every PyMySQL version and the raw-context form was silently not
+    # forcing TLS in testing.
+    DB_SSL = os.getenv("DB_SSL", "false").lower() == "true"
+    if DB_SSL:
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            "connect_args": {
+                "ssl_verify_cert": True,
+                "ssl_verify_identity": True,
+            }
+        }
+
     DEFAULT_EXAM_DURATION_MIN = 30
 
     # ---- Security hardening ----

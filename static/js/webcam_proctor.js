@@ -153,14 +153,15 @@
       objectModel = await withRetry(() => cocoSsd.load(), "coco-ssd (lite fallback)");
     }
 
-    // Fail CLOSED, not open: a proctored exam with no working detection is
-    // not a proctored exam. Previously this just logged an error and let
-    // the exam run unmonitored, which is exactly how the deploy bug went
-    // unnoticed. We block the exam from starting (not auto-submit — a
-    // network hiccup shouldn't burn the student's attempt) and offer a
-    // retry, so students can't unknowingly sit an unmonitored exam and
-    // admins can't unknowingly grade one.
-    if (!faceModel || !objectModel) {
+    // Fail CLOSED only on the OBJECT model — that's the one that actually
+    // catches phones/books/etc, which is the core anti-cheating feature.
+    // Requiring BOTH models to succeed made the exam unstartable on any
+    // network hiccup (including sometimes on localhost), which is worse
+    // than the bug we were fixing. The face model is best-effort: if it
+    // fails, the "empty seat" check is simply skipped (runCheck() already
+    // guards on `if (faceModel)`) rather than blocking the whole exam —
+    // students still get real object-detection proctoring.
+    if (!objectModel) {
       setStatus("Proctoring failed to start — see message below", false);
       showWarning(
         "Proctoring could not start (detection models failed to load, likely a network issue). " +
@@ -181,7 +182,12 @@
       return false;
     }
 
-    setStatus("Camera active — monitoring", true);
+    if (!faceModel) {
+      log("blazeface never loaded — continuing with object detection only (no empty-seat check).");
+      setStatus("Camera active — monitoring (face check unavailable)", true);
+    } else {
+      setStatus("Camera active — monitoring", true);
+    }
     return true;
   }
 

@@ -29,6 +29,13 @@ def create_app():
     # MAIL_SERVER isn't set — sending is just skipped, see email_service.py.
     mail.init_app(app)
 
+    # Scheduling times are stored as UTC in the DB but everything shown to
+    # or entered by a human (admin scheduling form, student messages) is in
+    # IST — see utils/timezone_helper.py. Exposed as Jinja helpers so every
+    # template converts the same way instead of drifting out of sync.
+    from utils.timezone_helper import utc_to_ist
+    app.jinja_env.filters["to_ist"] = utc_to_ist
+
     # Basic structured logging: every request's method/path/status gets logged
     # to stdout, which is exactly what cloud platforms (Render/Railway/Docker)
     # expect so their log viewers can pick it up automatically.

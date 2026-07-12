@@ -8,6 +8,7 @@ from models.exam import Exam
 from models.question import Question
 from models.student_answer import StudentAnswer
 from models.result import Result
+from utils.timezone_helper import utc_to_ist
 
 student_bp = Blueprint("student", __name__)
 
@@ -30,7 +31,8 @@ def _attempts_remaining(exam):
 def _schedule_message(exam):
     now = datetime.utcnow()
     if exam.scheduled_start and now < exam.scheduled_start:
-        return f"This exam opens at {exam.scheduled_start.strftime('%d %b %Y, %I:%M %p')} (UTC)."
+        opens_ist = utc_to_ist(exam.scheduled_start)
+        return f"This exam opens at {opens_ist.strftime('%d %b %Y, %I:%M %p')} IST."
     if exam.scheduled_end and now > exam.scheduled_end:
         return "This exam's scheduled window has ended."
     return "This exam is not currently available."
