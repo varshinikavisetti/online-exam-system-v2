@@ -54,7 +54,6 @@
       <thead><tr><th>Exam</th><th>Attempts</th><th>Avg %</th><th>Pass</th><th>Fail</th></tr></thead>
       <tbody>
         {% for row in exam_summary %}
-        {% if not selected_exam_id or row.exam_id == selected_exam_id %}
         <tr>
           <td>{{ row.exam_title }}</td>
           <td>{{ row.attempt_count }}</td>
@@ -62,7 +61,6 @@
           <td>{{ row.pass_count }}</td>
           <td>{{ row.fail_count }}</td>
         </tr>
-        {% endif %}
         {% endfor %}
       </tbody>
     </table>

@@ -9,12 +9,16 @@ from models.question import Question
 from models.student_answer import StudentAnswer
 
 
-def exam_performance_summary():
+def exam_performance_summary(exam_id=None):
     """
     Returns a list of dicts, one per exam:
-    { exam_title, average_percentage, pass_count, fail_count, attempt_count }
+    { exam_id, exam_title, average_percentage, pass_count, fail_count, attempt_count }
+    Optionally filtered to a single exam.
     """
-    exams = Exam.query.all()
+    query = Exam.query
+    if exam_id:
+        query = query.filter_by(id=exam_id)
+    exams = query.all()
     summary = []
 
     for exam in exams:

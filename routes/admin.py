@@ -349,6 +349,56 @@ def notify_students(exam_id):
     return redirect(url_for("admin.manage_exams"))
 
 
+@admin_bp.route("/debug/fix-terminated-scores", methods=["GET", "POST"])
+@login_required
+def fix_terminated_scores():
+    # TEMPORARY diagnostic/fix route — safe to delete once historical data
+    # is confirmed clean. Zeroes score/percentage on Result rows that are
+    # terminated=True but still carry a nonzero score from before that fix
+    # existed. GET previews what would change; POST (with confirmation)
+    # actually commits it. Admin-only, and doesn't touch anything that
+    # isn't terminated=True.
+    admin_only()
+
+    bad_rows = Result.query.filter(Result.terminated.is_(True), Result.score != 0).all()
+
+    if request.method == "POST":
+        if request.form.get("confirm") != "yes":
+            flash("Not confirmed — nothing changed.", "warning")
+            return redirect(url_for("admin.fix_terminated_scores"))
+        for r in bad_rows:
+            r.score = 0
+            r.percentage = 0
+        db.session.commit()
+        flash(f"Fixed {len(bad_rows)} terminated result(s) — score/percentage set to 0.", "success")
+        return redirect(url_for("admin.fix_terminated_scores"))
+
+    rows_html = "".join(
+        f"<tr><td>{r.id}</td><td>{r.exam_id}</td><td>{r.student_id}</td>"
+        f"<td>{r.score}</td><td>{r.percentage}</td><td>{r.termination_reason}</td></tr>"
+        for r in bad_rows
+    )
+    if not bad_rows:
+        return "<p>No terminated results with a nonzero score. Nothing to fix.</p>"
+
+    from flask_wtf.csrf import generate_csrf
+
+    return f"""
+    <div style="font-family:sans-serif;padding:1rem">
+      <h4>{len(bad_rows)} terminated result(s) still have a nonzero score</h4>
+      <table border="1" cellpadding="6" style="border-collapse:collapse">
+        <tr><th>Result ID</th><th>Exam ID</th><th>Student ID</th><th>Score</th><th>Percentage</th><th>Reason</th></tr>
+        {rows_html}
+      </table>
+      <form method="POST" style="margin-top:1rem">
+        <input type="hidden" name="csrf_token" value="{generate_csrf()}">
+        <input type="hidden" name="confirm" value="yes">
+        <button type="submit" style="padding:0.5rem 1rem">Fix these {len(bad_rows)} row(s) now</button>
+      </form>
+    </div>
+    """
+
+
 @admin_bp.route("/debug/results")
 @login_required
 def debug_results():
@@ -429,7 +479,7 @@ def analytics():
 
     exam_id = request.args.get("exam_id", type=int)
 
-    exam_summary = exam_performance_summary()
+    exam_summary = exam_performance_summary(exam_id=exam_id)
     difficulty_report = question_difficulty_report(exam_id=exam_id)
     pass_fail = overall_pass_fail_counts(exam_id=exam_id)
     trend = performance_trend(exam_id=exam_id)
