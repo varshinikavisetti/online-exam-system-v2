@@ -399,9 +399,14 @@ def analytics():
 
     exam_summary = exam_performance_summary()
     difficulty_report = question_difficulty_report(exam_id=exam_id)
-    pass_fail = overall_pass_fail_counts()
-    trend = performance_trend()
+    pass_fail = overall_pass_fail_counts(exam_id=exam_id)
+    trend = performance_trend(exam_id=exam_id)
     all_exams = Exam.query.order_by(Exam.created_at.desc()).all()
+
+    selected_exam_title = None
+    if exam_id:
+        selected = Exam.query.get(exam_id)
+        selected_exam_title = selected.title if selected else None
 
     return render_template(
         "analytics.html",
@@ -411,4 +416,5 @@ def analytics():
         trend=trend,
         all_exams=all_exams,
         selected_exam_id=exam_id,
+        selected_exam_title=selected_exam_title,
     )

@@ -17,17 +17,6 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # --- TEMPORARY DIAGNOSTIC: remove once the TiDB SSL issue is confirmed
-    # fixed. Two different SSL fixes have produced the identical error, so
-    # rather than guess a third time, this prints exactly what config is
-    # active at process startup — visible in Render's logs on next deploy.
-    print(
-        f"[STARTUP DIAGNOSTIC] DB_SSL={Config.DB_SSL} "
-        f"DB_HOST={Config.DB_HOST} DB_PORT={Config.DB_PORT} "
-        f"SQLALCHEMY_ENGINE_OPTIONS={app.config.get('SQLALCHEMY_ENGINE_OPTIONS')}",
-        flush=True,
-    )
-
     # CSRF protection on every state-changing (POST/PUT/PATCH/DELETE) request.
     csrf.init_app(app)
 

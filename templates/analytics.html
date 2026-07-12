@@ -1,13 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Analytics{% endblock %}
 {% block content %}
-<h4>Analytics Dashboard</h4>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <h4 class="mb-0">Analytics Dashboard</h4>
+  <form method="GET" class="d-flex align-items-center gap-2">
+    <label class="small text-muted mb-0">Subject / Exam:</label>
+    <select name="exam_id" class="form-select form-select-sm" style="min-width:220px" onchange="this.form.submit()">
+      <option value="">All exams (combined)</option>
+      {% for exam in all_exams %}
+      <option value="{{ exam.id }}" {% if selected_exam_id == exam.id %}selected{% endif %}>{{ exam.title }} ({{ exam.subject }})</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
 
 <div class="row g-3 mt-2">
   <div class="col-md-6">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h6 class="text-muted">Overall Pass / Fail</h6>
+        <h6 class="text-muted">Overall Pass / Fail{{ ' — ' + selected_exam_title if selected_exam_title }}</h6>
         <canvas id="passFailChart" height="200"></canvas>
       </div>
     </div>
@@ -24,24 +35,14 @@
 
 <div class="card shadow-sm mt-4">
   <div class="card-body">
-    <h6 class="text-muted">Student Performance Trend (Average % Over Time)</h6>
+    <h6 class="text-muted">Student Performance Trend (Average % Over Time){{ ' — ' + selected_exam_title if selected_exam_title }}</h6>
     <canvas id="trendChart" height="90"></canvas>
   </div>
 </div>
 
 <div class="card shadow-sm mt-4">
   <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h6 class="text-muted mb-0">Question Difficulty (% answered wrong)</h6>
-      <form method="GET" class="d-flex gap-2">
-        <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
-          <option value="">All Exams</option>
-          {% for exam in all_exams %}
-          <option value="{{ exam.id }}" {% if selected_exam_id == exam.id %}selected{% endif %}>{{ exam.title }}</option>
-          {% endfor %}
-        </select>
-      </form>
-    </div>
+    <h6 class="text-muted mb-3">Question Difficulty (% answered wrong){{ ' — ' + selected_exam_title if selected_exam_title }}</h6>
     <canvas id="difficultyChart" height="100"></canvas>
   </div>
 </div>
@@ -53,6 +54,7 @@
       <thead><tr><th>Exam</th><th>Attempts</th><th>Avg %</th><th>Pass</th><th>Fail</th></tr></thead>
       <tbody>
         {% for row in exam_summary %}
+        {% if not selected_exam_id or row.exam_id == selected_exam_id %}
         <tr>
           <td>{{ row.exam_title }}</td>
           <td>{{ row.attempt_count }}</td>
@@ -60,6 +62,7 @@
           <td>{{ row.pass_count }}</td>
           <td>{{ row.fail_count }}</td>
         </tr>
+        {% endif %}
         {% endfor %}
       </tbody>
     </table>

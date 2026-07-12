@@ -33,6 +33,7 @@ def exam_performance_summary():
             fail_count = attempt_count - pass_count
 
         summary.append({
+            "exam_id": exam.id,
             "exam_title": exam.title,
             "average_percentage": avg_percentage,
             "pass_count": pass_count,
@@ -79,22 +80,29 @@ def question_difficulty_report(exam_id=None):
     return report
 
 
-def overall_pass_fail_counts():
-    """Returns { 'pass': int, 'fail': int } across all exams."""
-    all_results = Result.query.all()
+def overall_pass_fail_counts(exam_id=None):
+    """Returns { 'pass': int, 'fail': int }. Optionally filtered to a single exam."""
+    query = Result.query
+    if exam_id:
+        query = query.filter_by(exam_id=exam_id)
+    all_results = query.all()
     passed = sum(1 for r in all_results if r.passed)
     failed = len(all_results) - passed
     return {"pass": passed, "fail": failed}
 
 
-def performance_trend():
+def performance_trend(exam_id=None):
     """
     Returns a list of dicts, one per calendar day that had submissions,
     ordered oldest -> newest:
     { date, average_percentage, attempt_count }
     Used to chart how student performance is trending over time.
+    Optionally filtered to a single exam.
     """
-    all_results = Result.query.order_by(Result.submitted_at.asc()).all()
+    query = Result.query
+    if exam_id:
+        query = query.filter_by(exam_id=exam_id)
+    all_results = query.order_by(Result.submitted_at.asc()).all()
 
     by_day = {}
     for r in all_results:
