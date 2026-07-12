@@ -349,6 +349,38 @@ def notify_students(exam_id):
     return redirect(url_for("admin.manage_exams"))
 
 
+@admin_bp.route("/debug/results")
+@login_required
+def debug_results():
+    # TEMPORARY diagnostic route — safe to delete once the terminated-score
+    # investigation is done. Admin-only (same guard as everything else in
+    # this file). Exists because Render's free tier has no Shell access, so
+    # this is the only way to inspect live TiDB data without a paid plan.
+    admin_only()
+
+    filter_text = request.args.get("exam", "").strip().lower()
+    query = Result.query.join(Exam, Result.exam_id == Exam.id)
+    if filter_text:
+        query = query.filter(Exam.title.ilike(f"%{filter_text}%"))
+    results = query.order_by(Result.exam_id, Result.submitted_at).all()
+
+    lines = []
+    for r in results:
+        exam = Exam.query.get(r.exam_id)
+        student = User.query.get(r.student_id)
+        lines.append(
+            f"Result id={r.id} | exam='{exam.title if exam else '?'}' "
+            f"(exam_id={r.exam_id}) | student={student.name if student else '?'} "
+            f"| score={r.score} | percentage={r.percentage} | passed={r.passed} "
+            f"| terminated={r.terminated} | termination_reason={r.termination_reason} "
+            f"| tab_switch_count={r.tab_switch_count} | auto_submitted={r.auto_submitted} "
+            f"| submitted_at={r.submitted_at}"
+        )
+
+    body = "\n".join(lines) if lines else "No results found."
+    return f"<pre>{body}</pre>"
+
+
 @admin_bp.route("/students")
 @login_required
 def view_students():
